@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#FFE066" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' https://m.media-amazon.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://platform.twitter.com; frame-src 'self' https://platform.twitter.com;"
+    />
+    <title>メロンパンさばいば～</title>
+    <!-- Favicon: MelonPan image -->
+    <link rel="icon" type="image/png" sizes="64x64" href="image/MelonPan.png" />
+    <link rel="apple-touch-icon" href="image/MelonPan.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <script src="js/early-init.js"></script>
+    <div id="app">
+      <header>
+        <h1>メロンパンさばいば～</h1>
+      </header>
+      <div id="toast" class="toast hidden"></div>
+      <main>
+        <section id="screen-lobby" class="screen card">
+          <h2>ロビー</h2>
+          <div class="lobby-title-banner">
+            <img
+              src="image/title.png"
+              alt="めろんぱんさばいば～のタイトル画像"
+              class="lobby-title-image"
+            />
+          </div>
+          <div class="row">
+            <input id="playerName" placeholder="プレイヤー名" maxlength="10" />
+            <button id="btnSetName" class="secondary">名乗る</button>
+          </div>
+          <div class="row" style="gap: 8px; align-items: center">
+            <span>現在の名前:</span>
+            <span id="currentName" class="badge">未設定</span>
+          </div>
+          <div class="row">
+            <label
+              ><input type="checkbox" id="chkRoomPassword" />
+              パスワード保護</label
+            >
+            <button id="btnCreateRoom">部屋を立てる</button>
+            <button id="btnJoinRandom">空き部屋に入る</button>
+          </div>
+          <div class="row">
+            <h3>公開中の部屋</h3>
+            <ul id="roomList"></ul>
+          </div>
+          <div class="row">
+            <button id="btnLobbySettings" class="secondary">設定</button>
+          </div>
+          <div class="row" style="gap: 8px; align-items: center">
+            <button id="btnAchievements" class="secondary">実績</button>
+            <button id="btnHelp" class="secondary">ヘルプ</button>
+            <iframe
+              scrolling="no"
+              frameborder="0"
+              allowtransparency="true"
+              allowfullscreen="true"
+              class="twitter-share-button twitter-share-button-rendered twitter-tweet-button"
+              title="X Post Button"
+              src="https://platform.twitter.com/widgets/tweet_button.html?text=メロンパンさばいば～&url=https://pixelpassion.jp/MelonPanGame/&hashtags=メロンパンさばいば～&lang=ja&size=m"
+              style="
+                position: static;
+                visibility: visible;
+                width: 77px;
+                height: 20px;
+              "
+            >
+            </iframe>
+            <span>バージョン:</span>
+            <span id="versionLabel" class="badge"></span>
+          </div>
+          <div id="lobbySettingsModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>設定</h3>
+              <div
+                class="row"
+                style="
+                  flex-direction: column;
+                  align-items: flex-start;
+                  gap: 8px;
+                "
+              >
+                <label
+                  ><input type="checkbox" class="set-bgm" /> BGM
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-sfx" /> 効果音
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-fps" /> FPS
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-ping" /> PING
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-load-stats" /> 負荷情報
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-coords" />
+                  座標を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-damage" />
+                  ダメージ数値を表示する</label
+                >
+                <label
+                  >フォント
+                  <select class="set-font">
+                    <option value="BestTenDOT">BestTen-DOT (組み込み)</option>
+                    <option value="M PLUS Rounded 1c">M PLUS Rounded 1c</option>
+                    <option value="Noto Sans JP">Noto Sans JP</option>
+                    <option value="system-ui">System UI</option>
+                  </select>
+                </label>
+                <label
+                  >BGM音量
+                  <input
+                    type="range"
+                    class="set-bgm-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+                <label
+                  >SE音量
+                  <input
+                    type="range"
+                    class="set-sfx-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+              </div>
+              <div class="row" style="gap: 8px">
+                <button id="btnExportSettings">設定をエクスポート</button>
+                <input
+                  type="file"
+                  id="fileImportSettings"
+                  accept="application/json"
+                  style="display: none"
+                />
+                <button id="btnImportSettings" class="secondary">
+                  設定をインポート
+                </button>
+              </div>
+              <div class="row row-end">
+                <button id="btnLobbySettingsClose" class="secondary">
+                  閉じる
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="helpModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>ヘルプ</h3>
+              <p>
+                PC向けヴァンサバライクオンラインゲーム めろんぱんさばいば～<br />プレイヤー名を入力して部屋を作成するか参加してください。<br />作者:https://x.com/hurumoon_1
+                <br />免責事項：このゲームではコードと一部キャラクター画像にAIが使用されています。
+              </p>
+              <div class="row row-end">
+                <button id="btnHelpClose" class="secondary">閉じる</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-room" class="screen card hidden">
+          <h2>部屋</h2>
+          <div class="row">
+            <span>部屋ID: <b id="roomIdLabel"></b></span>
+            <span id="roleLabel" class="badge"></span>
+            <span id="roomPasswordWrapper" class="hidden"
+              >パス: <b id="roomPasswordLabel"></b
+            ></span>
+          </div>
+          <div class="row">
+            <div>
+              <h3>キャラ選択</h3>
+              <select id="characterSelect"></select>
+              <div id="characterPreview">
+                <img id="characterImage" alt="キャラ" />
+                <p id="characterDescription"></p>
+                <ul id="characterStats"></ul>
+                <p id="characterAbility"></p>
+                <p id="characterExSkill"></p>
+                <p id="characterActive"></p>
+              </div>
+            </div>
+            <div>
+              <h3>ステージ選択</h3>
+              <select id="stageSelect"></select>
+              <div id="stagePreview">
+                <img id="stageImage" alt="ステージ" />
+                <p id="stageDescription"></p>
+                <p id="stageDifficulty"></p>
+                <p id="stageCorrection"></p>
+                <p id="stageClearStatus" class="stage-clear-status"></p>
+              </div>
+            </div>
+            <div>
+              <h3>難易度選択</h3>
+              <select id="difficultySelect"></select>
+              <p id="difficultyDescription"></p>
+              <p id="difficultyCorrection"></p>
+              <div
+                id="ignitionModeRow"
+                class="hidden"
+                style="
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+                  margin-top: 8px;
+                "
+              >
+                <label style="display: flex; align-items: center; gap: 6px">
+                  <input type="checkbox" id="chkIgnitionMode" />
+                  イグニッションモード
+                </label>
+                <span id="ignitionModeStatus" class="badge">OFF</span>
+              </div>
+              <p
+                id="ignitionModeHelp"
+                class="hidden"
+                style="font-size: 12px; color: #7a5200; margin: -6px 0 0"
+              >
+                ※「むずかしい」選択時に効果が適用されます
+              </p>
+            </div>
+            <div>
+              <h3>ショップ</h3>
+              <div class="row" style="gap: 8px; align-items: center">
+                <span>所持マネー:</span>
+                <span id="moneyBalanceRoom" class="badge">0</span>
+                <button id="btnOpenShop">ショップを開く</button>
+              </div>
+              <div id="shopLog" style="max-height: 120px; overflow: auto"></div>
+              <button id="btnOpenCardShop" class="hidden">
+                カードショップ
+              </button>
+              <button id="btnOpenWeaponShop" class="hidden">武器屋</button>
+            </div>
+          </div>
+          <div class="row hidden" id="subWeaponRow">
+            <div>
+              <h3>サブウェポン</h3>
+              <p class="subweapon-hint">
+                装備したいサブウェポンを選択してください。
+              </p>
+              <ul id="subWeaponList" class="subweapon-list"></ul>
+            </div>
+            <div id="secondSubWeaponSection" class="hidden">
+              <h3>セカンドサブウェポン</h3>
+              <p class="subweapon-hint">
+                サブウェポンを使い切ると自動で切り替わります。
+              </p>
+              <ul id="secondSubWeaponList" class="subweapon-list"></ul>
+            </div>
+          </div>
+          <div class="row">
+            <h3>メンバー</h3>
+            <ul id="memberList"></ul>
+          </div>
+          <div class="row">
+            <button id="btnReady">準備</button>
+            <button id="btnStart" class="secondary" disabled>ゲーム開始</button>
+            <button id="btnDisband" class="secondary">部屋を解散</button>
+            <button id="btnLeave">ロビーへ戻る</button>
+            <button id="btnRoomSettings" class="secondary">設定</button>
+            <button id="btnRoomAchievements" class="secondary">実績</button>
+            <button id="btnRoomGallery" class="secondary hidden">
+              ギャラリー
+            </button>
+            <button id="btnRoomStory" class="secondary">ストーリー</button>
+            <button id="btnRoomHelp" class="secondary">ヘルプ</button>
+          </div>
+          <div id="disbandConfirmModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>部屋を解散しますか？</h3>
+              <p>
+                部屋を解散すると全員がロビーに戻ります。この操作は取り消せません。
+              </p>
+              <div class="row" style="justify-content: flex-end; gap: 8px">
+                <button id="btnDisbandCancel" class="secondary">
+                  キャンセル
+                </button>
+                <button id="btnDisbandConfirm" class="danger">解散する</button>
+              </div>
+            </div>
+          </div>
+          <div id="roomSettingsModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>設定</h3>
+              <div
+                class="row"
+                style="
+                  flex-direction: column;
+                  align-items: flex-start;
+                  gap: 8px;
+                "
+              >
+                <label
+                  ><input type="checkbox" class="set-bgm" /> BGM
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-sfx" /> 効果音
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-fps" /> FPS
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-ping" /> PING
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-load-stats" /> 負荷情報
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-coords" />
+                  座標を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-damage" />
+                  ダメージ数値を表示する</label
+                >
+                <label
+                  >フォント
+                  <select class="set-font">
+                    <option value="BestTenDOT">BestTen-DOT (組み込み)</option>
+                    <option value="M PLUS Rounded 1c">M PLUS Rounded 1c</option>
+                    <option value="Noto Sans JP">Noto Sans JP</option>
+                    <option value="system-ui">System UI</option>
+                  </select>
+                </label>
+                <label
+                  >BGM音量
+                  <input
+                    type="range"
+                    class="set-bgm-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+                <label
+                  >SE音量
+                  <input
+                    type="range"
+                    class="set-sfx-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+              </div>
+              <div class="row row-end">
+                <button id="btnRoomSettingsClose" class="secondary">
+                  閉じる
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="shopModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>ショップ</h3>
+              <div class="row" style="gap: 12px; align-items: center">
+                <span>所持マネー:</span>
+                <span id="moneyBalanceShop" class="badge">0</span>
+                <button id="btnShopClose" class="secondary">閉じる</button>
+              </div>
+              <div id="shopItems"></div>
+            </div>
+          </div>
+          <div id="cardShopModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>カードショップ</h3>
+              <div class="row" style="gap: 12px; align-items: center">
+                <span>所持マネー:</span>
+                <span id="moneyBalanceCardShop" class="badge">0</span>
+                <button id="btnCardShopClose" class="secondary">閉じる</button>
+              </div>
+              <div class="row" style="gap: 12px; align-items: center">
+                <label style="display: flex; align-items: center; gap: 8px">
+                  <input type="checkbox" id="cardSynergyToggle" />
+                  シナジー効果を有効にする
+                </label>
+                <span class="hint" id="cardSynergyHint"
+                  >同属性カードの追加効果を切り替えできます</span
+                >
+              </div>
+              <div id="cardShopItems"></div>
+            </div>
+          </div>
+          <div id="weaponShopModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>武器屋</h3>
+              <div class="row" style="gap: 12px; align-items: center">
+                <span>所持マネー:</span>
+                <span id="moneyBalanceWeaponShop" class="badge">0</span>
+                <button id="btnWeaponShopClose" class="secondary">
+                  閉じる
+                </button>
+              </div>
+              <div id="weaponShopItems"></div>
+            </div>
+          </div>
+          <div id="roomStoryModal" class="modal hidden">
+            <div class="modal-content story-modal">
+              <h3 id="roomStoryTitle">ストーリー</h3>
+              <div id="roomStoryBody" class="story-body"></div>
+              <div
+                class="row"
+                style="
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 8px;
+                  margin-top: 16px;
+                "
+              >
+                <button id="btnRoomStoryPrev" class="secondary">戻る</button>
+                <span id="roomStoryIndicator" class="hint">0 / 0</span>
+                <button id="btnRoomStoryNext" class="secondary">次へ</button>
+              </div>
+              <div class="row row-end" style="margin-top: 12px">
+                <button id="btnRoomStoryClose" class="secondary">閉じる</button>
+              </div>
+            </div>
+          </div>
+          <div id="roomHelpModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>ヘルプ</h3>
+              <p>
+                キャラやステージ、難易度を選択し、準備を押して待機してください。<br />
+                ホストのみがゲーム開始ボタンを押せます。<br /><br />
+
+                ☆このゲームについて<br />
+                このゲームはPvEに対応したヴァンサバライクのオンラインゲームです。<br /><br />
+
+                ☆基本操作について<br />
+                　移動は矢印キーまたはWASDキーで行えます。<br />
+                　戦闘不能時はマウスドラッグで視点を自由に回し、Tabキーで観戦対象を切り替えられます。<br /><br />
+
+                ☆キャラについて<br />
+                キャラクターはそれぞれステータスと固有能力が異なります。<br /><br />
+
+                ―通常攻撃について<br />
+                　通常攻撃は共通で、無属性の球を敵に自動的に撃ちます。<br />
+                　レベルアップ報酬で火力や段数が強化されます。<br />
+                　魔導書やカードを使うことで属性付き攻撃に変化します。<br />
+                　属性は火、氷、雷、闇の４つがあり相性によってダメージが変化します。<br />
+                　属性は最大5段階まで強化され、同じ属性の魔導書やカードを続けて使うと段階が1ずつ上昇します。<br />
+                　別の属性を取得すると段階が1ずつ戻ります（最低1段階）。<br />
+                　属性持ちの敵に対し無属性で攻撃するとダメージは30％（0.3倍）になります。<br />
+                　弱点属性で攻撃すると段階に応じて倍率が上昇し、1段階目で150％（1.5倍）、5段階目で250％（2.5倍）まで伸びます。<br />
+                　弱点以外の属性は段階に応じて減衰し、1段階目で80％（0.8倍）、5段階目で50％（0.5倍）になります。<br />
+                　弱点関係は「火→氷→雷→闇→火」の循環になっています（例：火属性の敵は氷属性が弱点）。<br />
+                　属性持ちの敵には弱点を突ける属性攻撃を用意しましょう。HUDでは段階が「n/5」で表示されます。<br /><br />
+
+                ―固有能力について<br />
+                　キャラクターごとに異なる固有能力を持っています。<br />
+                　固有能力はレベルアップ報酬で強化可能。<br />
+                　さらにショップでEXスキルを購入すると強化されます。<br /><br />
+
+                ☆ステージについて<br />
+                ステージごとにギミックや敵の耐久値が異なります。<br />
+                共通仕様として、2:30ごとに中ボス、6:00ごとにボスが出現。<br />
+                15:00には死神が登場し、実質的にゲーム終了となります。<br />
+                ※開始から1分以内に戦闘を終えた場合、獲得マネーとキャラクター経験値は得られません。<br /><br />
+
+                ―ステージアイテムについて<br />
+                　報酬エリア：エリア内に一定時間滞在すると追加報酬や回復が獲得できます。<br />
+                　リスクリターンエリア：複数のエリアが同時に出現し、全員で踏破すると経験値3倍やメロンパン出現率5倍の効果が得られる代わりに強力な弾幕敵が襲来します。一定時間で消滅するため、挑むかどうか素早く判断しましょう。<br />
+                　変換施設：パン屋。エナジーを別のエナジーへ変換できる装置です。<br />
+                　ジャンプ台：踏み込むことで離れた足場へ素早く移動できます。<br /><br />
+
+                ―ドロップアイテムについて<br />
+                　経験値オーブ：撃破した敵が落とします。獲得経験値は経過時間に応じて1＋⌊経過秒数÷20⌋で増加し、リスクイベント「経験値」発動中は同量が追加で出現します。<br />
+                　5倍経験値オーブ：基本の経験値オーブの5倍の値を持ち、中型個体は1個、大型個体は3個確定で落とすほか、一部のタンク敵（30％）や報酬エリアなどからも出現します。<br />
+                　マネー：ショップでの購入資金となる通貨です。<br />
+                　メロンパン：拾うと即座にHPを20回復します（エナジーシステム適用時は糖分によって回復量が増減）。<br />
+                　レインボーメロンパン：通常メロンパンの約1％で出現し、取得するとHPを50回復します。<br />
+                　カードオーブ：銅・銀・金・虹の4種類があり、基礎出現率は順に約80％／14.5％／4％／1.5％です。出現率は一部カード効果で金・虹が上昇します。<br /><br />
+
+                ☆難易度について<br />
+                難易度によって敵の耐久値や湧き上限が変化します。<br />
+                一部のキャラは難易度に応じて固有能力が調整されます。<br /><br />
+
+                ☆イグニッションモードについて<br />
+                難易度「むずかしい」で3ステージ以上クリアするとショップで解禁できる高難度オプションです。<br />
+                ONにすると敵の耐久値や出現量、弾幕密度、被ダメージがさらに上昇し、専用挙動や報酬が追加されます。<br /><br />
+
+                ☆敵について<br />
+                通常の雑魚敵は「(8＋⌊経過秒数÷20⌋)×(1＋min(1.8,経過秒数×0.001))×難易度補正×ステージ補正×{2分経過ごとに+10％}」でHPが決まり、<br />
+                イグニッションON時は特殊個体「イグニッション抑制機」が一定時間後から混ざります。<br />
+                ・追尾型（チェイサー）：最も近いプレイヤーを真っすぐ追跡します。<br />
+                ・ジグザグ型（ジグ）：蛇行しながら接近し回避しづらい軌道を取ります。<br />
+                ・射撃型（シューター）：中距離を保って横移動し、視線が通ると弾を発射します。<br />
+                ・強襲型（ダッシャー）：一定距離まで接近すると溜め動作の後、高速で直進突撃します。<br />
+                ・自爆型（ボマー）：接近すると導火線が点火し、爆発範囲内に大ダメージを与えます。<br />
+                ・氷結型（フリーザー）：HPが3倍になっており移動は遅いですが、定期的に氷ブロックを生成します。<br />
+                ・タンク：HPが難易度ごとの倍率（かんたん4.5倍／ふつう9倍／むずかしい20倍）になり、やや鈍足ですが高耐久個体です。<br />
+                ・イグニッションサプレッサー：イグニッションON時に出現し、移動は遅い代わりに連続で放射状弾幕を展開します。<br />
+                ・弾幕機（バラージ）：リスクイベントで出現し、高耐久かつ定期的な全方位弾幕と扇状射撃を行います。<br />
+                ・特殊個体（虹スライム）：高耐久で与ダメージが1割しか通らない代わりに撃破時の報酬が豪華です。<br />
+                ・中型個体／大型個体：2.5分ごと・6分ごとに出現するボスでHPは時間経過と参加人数で大幅に増加し、弾幕攻撃を使います。<br />
+                ・死神：15分経過で出現する超高HPの暗属性ボスで、高速移動と狙撃弾を放ちます。<br /><br />
+
+                ☆ショップについて<br />
+                獲得したマネーでアイテムを購入できます。<br /><br />
+
+                　―強化アイテム<br />
+                　　ステータスが上昇。<br /><br />
+
+                　―強化枠開放アイテム<br />
+                　　レベルアップ報酬による強化枠が増加。<br /><br />
+
+                　―解禁枠<br />
+                　　キャラクター、ステータス、レシピカード、エナジーシステムを解禁。<br /><br />
+
+                　―カードショップ<br />
+                　　ショップからレシピカードをそれぞれ解禁可能。<br />
+                　　レシピカードの売却価格は半分になるので注意。<br />
+                　　フィールドでカードオーブを拾うと、解禁済みカードの中から1つ取得できます。<br />
+                　　カードには属性値とレア度があり、同属性でシナジーを発揮し同時消費されます。<br /><br />
+
+                　　レア度別オーブ抽選対象：<br />
+                　　　1 → 銅のカードオーブ<br />
+                　　　2 → 銀のカードオーブ<br />
+                　　　3 → 金のカードオーブ<br />
+                　　　4 → 虹のカードオーブ<br /><br />
+
+                　―レシピカード<br />
+                　　戦闘中に数字キーを使うことで使用可能。デッキには最大3枚まで入れられます。<br /><br />
+
+                　―アーマー<br />
+                　　HPより先に消費されます。10秒に1ずつ自然回復します。可愛さが80以上の場合、回復速度が1.5倍になります。<br /><br />
+
+                　―アクティブウェポン<br />
+                　　強力で能動的な攻撃が出来ます。Qキーで使用可能。一定時間経つと使用可能になります。<br /><br />
+                　―メロンパンエナジー<br />
+                　　5種類のエナジー（各0～100、初期値:T50/S30/Y10/C30/B15）を管理します。変換施設でイースト菌と糖分を相互に変換し、糖分→可愛さ→ブランド力と順に変換可能です。<br />
+                　　・テンション：<br />
+                　　　ボスへの与ダメージ倍率 = 0.00008 × T^2 + 0.004 × T +
+                0.6<br />
+                　　　移動中：テンション減少量 = (1.3 - (1 + (糖分 - 30) ×
+                0.006)) × 秒<br />
+                　　　停止中：テンション回復量 = <br />
+                　　　　　基礎回復 = 100 / 60<br />
+                　　　　　イースト菌補正 = 1 + (イースト菌 - 10) × 0.002<br />
+                　　　　　糖分補正 = 1 + (糖分 - 30) × 0.006<br />
+                　　　　　ブランド力補正 = 0.00006 × ブランド力^2 + 0.005 ×
+                ブランド力 + 0.6<br />
+                　　　　　総回復量 = 基礎回復 × イースト菌補正 × 糖分補正 ×
+                ブランド力補正<br />
+                　　・糖分：回復量倍率=0.00016×S^2-0.002×S+0.7。毎秒10/60減少し、イースト菌1を0.7で変換して補充、糖分1は0.8でイースト菌に変換可能。<br />
+                　　・イースト菌：テンション自然回復を(1+(Y-10)×0.002)倍に。毎秒50/60増加し、糖分へは1あたり0.7、糖分1を0.8で変換して補充できる。<br />
+                　　・可愛さ：攻撃力×(0.00004×C^2+0.9)、アーマー上限×(0.006×C+0.5)。Cが80以上でアーマー自然回復速度1.5倍。糖分1を0.8で変換して増加し、ブランド力へは1あたり0.85で変換。<br />
+                　　・ブランド力：獲得マネー倍率=0.00002×B^2+0.001×B+0.9。テンション自然回復への影響は(0.00006×B^2+0.005×B+0.6)の倍率として、上記テンション自然回復式に含まれています（別途重複して適用されることはありません）。被ダメージ倍率=0.00002×B^2-0.005×B+1.1（B=100で0.8倍、B=50で0.9倍、B=0で1.1倍）。15秒ごとに1減少（テンション80以上なら30秒ごとに1減少）。可愛さ1を0.85で変換して得られる。<br />
+                <br />
+                　―サブウェポン<br />
+                　　ショップで解禁すると武器屋が開放され、購入したサブウェポンを部屋画面で装備できます。<br />
+                　　サブウェポンは種類ごとに使用可能回数が決まっており、戦闘中はEキーで発動します。<br />
+                　　発動中はHUDに残り回数とゲージが表示され、回数が尽きるとその戦闘では使用できません。<br /><br />
+              </p>
+
+              <div class="row row-end">
+                <button id="btnRoomHelpClose" class="secondary">閉じる</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div id="achievementsModal" class="modal hidden">
+          <div class="modal-content">
+            <h3>実績</h3>
+            <div id="achievementList" class="achievement-list"></div>
+            <div class="row row-end" style="gap: 8px">
+              <button id="btnAchievementsClose" class="secondary">
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="galleryModal" class="modal hidden">
+          <div class="modal-content gallery-modal">
+            <h3>ギャラリー</h3>
+            <div class="gallery-body">
+              <div id="galleryGrid" class="gallery-grid"></div>
+              <div class="gallery-preview">
+                <div class="gallery-preview-meta">
+                  <div id="galleryPreviewTitle" class="gallery-preview-title">
+                    イラスト未選択
+                  </div>
+                </div>
+                <div class="gallery-preview-image-wrapper">
+                  <img
+                    id="galleryPreviewImage"
+                    alt="ギャラリー画像"
+                    class="gallery-preview-image hidden"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row row-end" style="gap: 8px">
+              <button id="btnGalleryClose" class="secondary">閉じる</button>
+            </div>
+          </div>
+        </div>
+
+        <section id="screen-game" class="screen card hidden">
+          <h2>ステージ</h2>
+          <canvas id="gameCanvas" width="640" height="360"></canvas>
+          <div class="hud">
+            <div class="hud-top">
+              <div id="hudChip" class="chip hidden">
+                <img id="hudChipImg" alt="chip" />
+                <div class="meta">
+                  <div id="hudChipCName" class="cname">-</div>
+                  <div id="hudChipPName" class="pname">-</div>
+                </div>
+              </div>
+              <div id="cardDeck" class="card-deck hidden"></div>
+            </div>
+            <div class="hud-bottom">
+              <div class="hud-bottom-row">
+                <span id="hudStats">HP: - / ATK: - / LV: - / TIME: -</span>
+              </div>
+              <div class="hud-bottom-row">
+                <div
+                  id="activeGaugeWrapper"
+                  class="active-gauge-wrapper hidden"
+                >
+                  <span id="hudActiveName" class="hud-active-name"
+                    >アクティブウェポン：-</span
+                  >
+                  <div id="activeGauge" class="active-gauge">
+                    <div class="fill"></div>
+                  </div>
+                  <div id="activeGaugeTime" class="active-gauge-time"></div>
+                </div>
+                <div id="reviveGauge" class="revive-gauge hidden">
+                  <span id="reviveGaugeLabel" class="revive-gauge-label"
+                    >蘇生準備中</span
+                  >
+                  <div class="revive-gauge-bar">
+                    <div class="fill"></div>
+                  </div>
+                </div>
+                <div id="hudCardBuffs" class="card-buffs hidden"></div>
+              </div>
+              <div class="hud-bottom-row hidden" id="hudSubWeaponRow">
+                <span id="hudSubWeaponName" class="hud-subweapon-name"
+                  >サブウェポン: -</span
+                >
+                <div id="hudSubWeaponGauge" class="subweapon-gauge">
+                  <div class="fill"></div>
+                </div>
+                <span id="hudSubWeaponUses" class="hud-subweapon-uses"
+                  >0/0</span
+                >
+              </div>
+              <div class="hud-bottom-row">
+                <span id="hudEnergy"
+                  >テンション: - / 糖分: - / イースト菌: - / 可愛さ: - /
+                  ブランド力: -</span
+                >
+                <div id="energyGauges" class="energy-gauges hidden">
+                  <div
+                    id="energyGauge-tension"
+                    class="energy-gauge"
+                    title="テンション"
+                  >
+                    <div class="fill"></div>
+                  </div>
+                  <div id="energyGauge-sugar" class="energy-gauge" title="糖分">
+                    <div class="fill"></div>
+                  </div>
+                  <div
+                    id="energyGauge-yeast"
+                    class="energy-gauge"
+                    title="イースト菌"
+                  >
+                    <div class="fill"></div>
+                  </div>
+                  <div
+                    id="energyGauge-cuteness"
+                    class="energy-gauge"
+                    title="可愛さ"
+                  >
+                    <div class="fill"></div>
+                  </div>
+                  <div
+                    id="energyGauge-brand"
+                    class="energy-gauge"
+                    title="ブランド力"
+                  >
+                    <div class="fill"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="hud-bottom-row hidden" id="hudEnergyMulRow">
+                <span id="hudEnergyMul"></span>
+              </div>
+              <div class="hud-bottom-row hidden" id="hudCoordinatesRow">
+                <span id="hudCoordinates"></span>
+              </div>
+              <div class="hud-bottom-row">
+                <div
+                  id="hudPerksGame"
+                  style="display: flex; gap: 6px; flex-wrap: wrap"
+                ></div>
+                <button id="btnPause" class="secondary">設定</button>
+              </div>
+            </div>
+          </div>
+          <div id="pauseModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>設定</h3>
+              <div
+                class="row"
+                style="
+                  flex-direction: column;
+                  align-items: flex-start;
+                  gap: 8px;
+                "
+              >
+                <label
+                  ><input type="checkbox" class="set-bgm" /> BGM
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-sfx" /> 効果音
+                  を有効にする</label
+                >
+                <label
+                  ><input type="checkbox" class="set-fps" /> FPS
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-ping" /> PING
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-load-stats" /> 負荷情報
+                  を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-coords" />
+                  座標を表示する</label
+                >
+                <label
+                  ><input type="checkbox" class="set-damage" />
+                  ダメージ数値を表示する</label
+                >
+                <label
+                  >BGM音量
+                  <input
+                    type="range"
+                    class="set-bgm-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+                <label
+                  >SE音量
+                  <input
+                    type="range"
+                    class="set-sfx-volume"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                /></label>
+                <label
+                  >フォント
+                  <select class="set-font">
+                    <option value="BestTenDOT">BestTen-DOT (組み込み)</option>
+                    <option value="M PLUS Rounded 1c">M PLUS Rounded 1c</option>
+                    <option value="Noto Sans JP">Noto Sans JP</option>
+                    <option value="system-ui">System UI</option>
+                  </select>
+                </label>
+              </div>
+              <button id="btnResume">再開</button>
+              <button id="btnExit">終了して部屋へ</button>
+            </div>
+          </div>
+          <div id="serverErrorModal" class="modal hidden">
+            <div class="modal-content">
+              <p>サーバーが混雑しています。しばらくお待ちください。</p>
+            </div>
+          </div>
+          <div id="levelUpModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>レベルアップ！</h3>
+              <div
+                id="levelChoices"
+                class="row"
+                style="flex-direction: column; align-items: stretch; gap: 8px"
+              ></div>
+            </div>
+          </div>
+          <div id="cardSelectModal" class="modal hidden">
+            <div class="modal-content">
+              <h3 id="cardSelectHeading">カード選択</h3>
+              <div
+                id="cardSelectChoices"
+                class="row"
+                style="flex-direction: column; align-items: stretch; gap: 8px"
+              ></div>
+            </div>
+          </div>
+          <div id="converterModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>リソース変換</h3>
+              <div class="row" style="gap: 8px; align-items: center">
+                <select id="convertFrom"></select>
+                <span>→</span>
+                <select id="convertTo"></select>
+              </div>
+              <div class="row" style="gap: 8px; align-items: center">
+                <input
+                  id="convertAmount"
+                  type="number"
+                  min="10"
+                  max="100"
+                  step="10"
+                  value="10"
+                />
+                <div class="convert-amount-buttons">
+                  <button
+                    id="convertAmountUp"
+                    type="button"
+                    data-convert-delta="10"
+                    aria-label="変換量を10増やす"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    id="convertAmountDown"
+                    type="button"
+                    data-convert-delta="-10"
+                    aria-label="変換量を10減らす"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </div>
+              <div class="row">
+                <span id="convertEnergyStatus"></span>
+              </div>
+              <div class="row">
+                <span id="convertRate"></span>
+              </div>
+              <div class="row" style="gap: 8px">
+                <button id="btnConvert">変換</button>
+                <button id="btnConvertCancel" class="secondary">
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-result" class="screen card hidden">
+          <h2>リザルト</h2>
+          <div id="resultStats" style="padding-bottom: 12px"></div>
+          <button id="btnBackToRoom" style="padding-top: 6px">
+            部屋へ戻る
+          </button>
+        </section>
+      </main>
+      <footer class="ad-section" aria-label="おすすめアイテム">
+        <div class="ad-card">
+          <img
+            src="https://m.media-amazon.com/images/I/71d1sgKo6KL._AC_SL1500_.jpg"
+            alt="LoveLive! Series Asia Tour 2024 ~みんなで叶える物語~ Blu-ray"
+          />
+          <div class="info">
+            <div>
+              LoveLive! Series Asia Tour 2024 ~みんなで叶える物語~ Blu-ray
+            </div>
+            <a
+              href="https://amzn.to/4nIj4Br"
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              class="amazon-btn"
+              >Amazonで購入</a
+            >
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
